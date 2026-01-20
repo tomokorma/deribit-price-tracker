@@ -1,0 +1,24 @@
+services:
+  deribit_postgres:
+    container_name: deribit_postgres
+    image: deribit_postgres:dev
+    env_file:
+      - ./postgres/db.env
+    ports:
+      - "127.0.0.1:5432:5432"
+    networks:
+      - deribit_network
+  deribit_backend:
+    container_name: deribit_backend
+    image: deribit_backend:dev
+    env_file:
+      - ./dev.env
+    ports:
+      - "127.0.0.1:5000:5000"
+    depends_on:
+      - deribit_postgres
+    networks:
+      - deribit_network
+networks:
+  deribit_network:
+    driver: bridge

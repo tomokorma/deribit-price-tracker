@@ -1,0 +1,9 @@
+bjoern==3.2.2
+Flask==3.0.0
+Flask-First==0.14.6
+Flask-SQLAlchemy==3.1.1
+jwcrypto==1.5.0
+psycopg2-binary==2.9.7
+pyTelegramBotAPI==4.14.0
+requests==2.31.0
+werkzeug==3.0.1
