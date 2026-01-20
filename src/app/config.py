@@ -33,7 +33,6 @@ class Config:
         },
     }
 
-    # Настройки базы данных.
     # 'postgresql://username:password@host:port/db_name'
     SQLALCHEMY_DATABASE_URI = (
         f'postgresql://'
@@ -41,14 +40,22 @@ class Config:
         f'@{os.environ["POSTGRES_HOST"]}:{os.environ["POSTGRES_PORT"]}'
         f'/{os.environ["POSTGRES_DB"]}'
     )
-    if ENV == 'production':
-        SQLALCHEMY_ENGINE_OPTIONS = {
-            'connect_args': {'target_session_attrs': 'read-write', 'sslmode': 'verify-full'}
-        }
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'connect_args': {'target_session_attrs': 'read-write', 'sslmode': 'disable'}
+    }
     SQLALCHEMY_ECHO = False
     SQLALCHEMY_RECORD_QUERIES = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    # Pagination.
     ITEMS_PER_PAGE = os.environ.get('ITEMS_PER_PAGE') or 20
     MAX_PER_PAGE = os.environ.get('MAX_PER_PAGE') or 100
+
+    REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
+    REDIS_PORT = int(os.environ.get('REDIS_PORT', 6379))
+    REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', '')
+    REDIS_DB = int(os.environ.get('REDIS_DB', 0))
+
+    CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+    CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
+
+    DERIBIT_BASE_URL = os.environ.get('DERIBIT_BASE_URL', 'https://www.test.deribit.com/api/v2')
