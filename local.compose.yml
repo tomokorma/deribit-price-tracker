@@ -3,22 +3,78 @@ services:
     container_name: deribit_postgres
     image: deribit_postgres:dev
     env_file:
-      - ./postgres/db.env
+      - ./external/postgres/db.env
     ports:
       - "127.0.0.1:5432:5432"
     networks:
       - deribit_network
+    volumes:
+        - postgres_data:/var/lib/postgresql/data
+
+  deribit_redis:
+    container_name: deribit_redis
+    image: deribit_redis:dev
+    build:
+      context: ./external/redis
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:6379:6379"
+    networks:
+      - deribit_network
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
   deribit_backend:
     container_name: deribit_backend
     image: deribit_backend:dev
+    build:
+      context: .
+      dockerfile: Dockerfile
     env_file:
       - ./dev.env
     ports:
       - "127.0.0.1:5000:5000"
     depends_on:
       - deribit_postgres
+      - deribit_redis
     networks:
       - deribit_network
+    volumes:
+      - ./src:/app/src
+
+  deribit_celery_worker:
+    container_name: deribit_celery_worker
+    image: deribit_backend:dev
+    env_file:
+      - ./dev.env
+    depends_on:
+      - deribit_postgres
+      - deribit_redis
+    networks:
+      - deribit_network
+    volumes:
+      - ./src:/app/src
+    command: celery -A src.app.celery_app worker --loglevel=info
+
+  deribit_celery_beat:
+    container_name: deribit_celery_beat
+    image: deribit_backend:dev
+    env_file:
+      - ./dev.env
+    depends_on:
+      - deribit_postgres
+      - deribit_redis
+    networks:
+      - deribit_network
+    volumes:
+      - ./src:/app/src
+    command: celery -A src.app.celery_app beat --loglevel=info
+
 networks:
   deribit_network:
     driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:

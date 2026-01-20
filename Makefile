@@ -14,9 +14,10 @@ clean:
 	# Reset all containers and volumes.
 	docker compose -f local.compose.yml down --remove-orphans --volumes --timeout 1
 
-build: clean
+build: venv clean
 	# Build image all services.
-	docker build -q -t deribit_postgres:dev ./postgres
+	docker build -q -t deribit_postgres:dev ./external/postgres
+	docker build -q -t deribit_redis:dev ./external/redis
 	docker build -q -t deribit_backend:dev .
 	docker compose -f ./local.compose.yml build
 

@@ -1,22 +1,27 @@
-FROM python:3.11-slim-bookworm
+FROM python:3.11-slim
 
-ENV PYTHONUNBUFFERED 1
+WORKDIR /app
 
-RUN apt-get -q update \
-    && apt-get -q -y --no-install-recommends install libev4 libev-dev gcc libc6-dev wget
+# Устанавливаем системные зависимости
+RUN apt-get update && apt-get install -y \
+    gcc \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /opt/backend
-
+# Копируем зависимости
 COPY ./src/requirements.txt ./requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-RUN pip install --no-cache-dir --upgrade pip wheel \
-    && pip install --no-cache-dir -r requirements.txt
+# Копируем исходный код
+COPY src/ ./src/
 
-RUN apt-get -q -y purge libev-dev gcc libc6-dev wget \
-    && apt-get -q -y autoremove \
-    && apt-get -q -y clean \
-    && apt-get -q -y autoclean
+# Создаем пользователя приложения
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+USER appuser
 
-COPY ./src/. ./
+# Переменные окружения по умолчанию
+ENV PYTHONPATH=/app/src
+ENV PYTHONUNBUFFERED=1
 
-ENTRYPOINT ["python", "main.py"]
+# Точка входа
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "5000", "--reload"]
